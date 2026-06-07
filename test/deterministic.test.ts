@@ -37,6 +37,26 @@ describe("deterministic linter", () => {
     expect(ids).toContain("tool-name-too-long");
   });
 
+  it("flags an invalid inputSchema", () => {
+    const ids = rulesFor("bad_input_schema");
+    expect(ids).toContain("input-schema-invalid");
+  });
+
+  it("flags an inputSchema that is not of type object", () => {
+    const ids = rulesFor("array_input_schema");
+    expect(ids).toContain("input-schema-not-object");
+  });
+
+  it("flags an invalid outputSchema", () => {
+    const ids = rulesFor("bad_output_schema");
+    expect(ids).toContain("output-schema-invalid");
+  });
+
+  it("flags a missing inputSchema", () => {
+    const ids = rulesFor("");
+    expect(ids).toContain("input-schema-missing");
+  });
+
   it("assigns correct severities", () => {
     const findings = runLinter(brokenSnapshot);
     const desc = findings.find((f) => f.ruleId === "tool-description-missing");

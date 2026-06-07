@@ -1,30 +1,10 @@
 import pc from "picocolors";
-import type { Finding, McpSnapshot, RuleId, ToolInfo } from "../model/types.js";
-import { RULES } from "../rules.js";
+import type { Finding, McpSnapshot } from "../model/types.js";
 
 export interface ReportSummary {
   errors: number;
   warnings: number;
 }
-
-/** Tool-level rules in registry order; param rules are handled per parameter. */
-const TOOL_RULE_IDS = (Object.keys(RULES) as RuleId[]).filter(
-  (id) => id !== "param-description-missing",
-);
-
-/** Positive wording shown for a passed check (rule titles describe failures). */
-const PASS_LABELS: Record<RuleId, string> = {
-  "tool-description-missing": "Has a description",
-  "param-description-missing": "All parameters documented",
-  "tool-name-empty": "Has a name",
-  "tool-name-too-long": "Name length within limit",
-  "tool-title-missing": "Has a title annotation",
-  "hint-readonly-missing": "Declares readOnlyHint",
-  "hint-destructive-missing": "Declares destructiveHint",
-  "hint-idempotent-missing": "Declares idempotentHint",
-  "hint-openworld-missing": "Declares openWorldHint",
-  "output-schema-missing": "Has an outputSchema",
-};
 
 export function summarize(findings: Finding[]): ReportSummary {
   let errors = 0;
@@ -63,7 +43,7 @@ export function renderConsole(
     const key = tool.name || "<unnamed>";
     const group = byTool.get(key) ?? [];
     if (group.length === 0) cleanTools++;
-    renderTool(tool, key, group);
+    renderTool(key, group);
   }
 
   const { errors, warnings } = summarize(findings);
@@ -83,8 +63,8 @@ export function renderConsole(
   );
 }
 
-/** Renders one tool: a status header, its findings, then passed checks. */
-function renderTool(tool: ToolInfo, key: string, group: Finding[]): void {
+/** Renders one tool: a status header followed by its findings (if any). */
+function renderTool(key: string, group: Finding[]): void {
   const hasError = group.some((f) => f.severity === "error");
   const symbol = hasError
     ? pc.red("✗")
@@ -99,22 +79,5 @@ function renderTool(tool: ToolInfo, key: string, group: Finding[]): void {
     console.log(`  ${tag}  ${f.message}  ${pc.dim(f.ruleId)}`);
   }
 
-  for (const ruleId of passedRules(tool, group)) {
-    console.log(`  ${pc.green("✓")}  ${PASS_LABELS[ruleId]}  ${pc.dim(ruleId)}`);
-  }
-
-  console.log("");
-}
-
-/** Tool-level rules that produced no finding for this tool. */
-function passedRules(tool: ToolInfo, group: Finding[]): RuleId[] {
-  const failed = new Set(group.map((f) => f.ruleId));
-  return TOOL_RULE_IDS.filter((id) => !failed.has(id) && appliesToTool(id, tool));
-}
-
-/** Skip name-length as "passed" when the name is empty (name-empty applies instead). */
-function appliesToTool(ruleId: RuleId, tool: ToolInfo): boolean {
-  if (ruleId === "tool-name-too-long") return tool.name.trim().length > 0;
-  if (ruleId === "tool-name-empty") return tool.name.trim().length > 0;
-  return true;
+  if (group.length > 0) console.log("");
 }

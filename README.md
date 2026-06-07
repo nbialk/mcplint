@@ -1,4 +1,4 @@
-# mcp-cli-checker
+# mcplint
 
 A CLI tool that connects to a Model Context Protocol (MCP) server and lints its
 tool definitions. Think of it as ESLint for MCP tools: it connects, reads the
@@ -7,7 +7,7 @@ authors can keep their tool definitions clean and convention-compliant.
 
 ## Vision & scope
 
-`mcp-cli-checker` aims to be the **open, CI-friendly pre-flight linter for MCP servers and MCP Apps** — the checks you can run yourself, on every commit, before you ever submit to a store. App readiness breaks down into three layers, and this project deliberately scopes itself to the first two.
+`mcplint` aims to be the **open, CI-friendly pre-flight linter for MCP servers and MCP Apps** — the checks you can run yourself, on every commit, before you ever submit to a store. App readiness breaks down into three layers, and this project deliberately scopes itself to the first two.
 
 **Layer 1 — Static checks (in scope, available today).** Issues found purely from the manifest and tool/resource definitions: missing tool or parameter descriptions, invalid or incomplete schemas, naming conventions, missing hints, missing `outputSchema`. Fast, deterministic, no runtime required. This is the current core of the tool (see [What it checks](#what-it-checks)).
 
@@ -23,16 +23,31 @@ This is where the project adds the most value: shippable by a small team, runnab
 
 **Layer 3 — Live store-submission audits (out of scope).** Launching your app inside *real* ChatGPT and Claude.ai sessions, capturing screenshots, and checking against the current — and partly non-public — acceptance criteria of the Connector Directory / app stores. These rules are a moving, partly private target; chasing them open-source means an endless maintenance treadmill against whoever knows the rules first. We intentionally leave this to hosted services such as [Alpic Beacon](https://docs.alpic.ai/testing/beacon). **For the final store submit, use Beacon/Alpic.**
 
-In short: `mcp-cli-checker` owns Layers 1 and 2 in the open and points you to a hosted audit for Layer 3.
+In short: `mcplint` owns Layers 1 and 2 in the open and points you to a hosted audit for Layer 3.
 
 ## Installation
+
+Run it without installing via `npx`:
+
+```bash
+npx mcplint --url <url>
+```
+
+Or install it globally:
+
+```bash
+npm install -g mcplint
+mcplint --url <url>
+```
+
+### From source
 
 ```bash
 pnpm install
 pnpm build
 ```
 
-This builds the CLI to `dist/cli.js`, exposed as the `mcp-check` binary.
+This builds the CLI to `dist/cli.js`, exposed as the `mcplint` binary.
 
 During development you can run it without building:
 
@@ -46,10 +61,10 @@ Provide exactly one connection target:
 
 ```bash
 # Streamable HTTP MCP server
-mcp-check --url https://example.com/mcp
+mcplint --url https://example.com/mcp
 
 # Local stdio MCP server
-mcp-check --stdio "node server.js"
+mcplint --stdio "node server.js"
 ```
 
 ### Options
@@ -70,8 +85,8 @@ For servers that require authentication, pass credentials with `--bearer` or
 `--header` (HTTP connections only):
 
 ```bash
-mcp-check --url https://example.com/mcp --bearer <token>
-mcp-check --url https://example.com/mcp --header "X-Api-Key: <key>"
+mcplint --url https://example.com/mcp --bearer <token>
+mcplint --url https://example.com/mcp --header "X-Api-Key: <key>"
 ```
 
 If the server rejects the connection due to missing or invalid credentials, the
@@ -93,6 +108,10 @@ Each tool reported by the server is validated against these rules:
 | `hint-idempotent-missing`   | warning  | Tool is missing the `idempotentHint`.        |
 | `hint-openworld-missing`    | warning  | Tool is missing the `openWorldHint`.         |
 | `output-schema-missing`     | warning  | Tool is missing an `outputSchema`.           |
+| `input-schema-missing`      | error    | Tool is missing an `inputSchema`.            |
+| `input-schema-invalid`      | error    | `inputSchema` is not a valid JSON Schema.    |
+| `input-schema-not-object`   | warning  | `inputSchema` is not of type `object`.       |
+| `output-schema-invalid`     | error    | `outputSchema` is not a valid JSON Schema.   |
 
 ## Output
 
@@ -131,3 +150,7 @@ pnpm test              # run the vitest suite
 ## Requirements
 
 - Node.js >= 18
+
+## License
+
+[MIT](./LICENSE)

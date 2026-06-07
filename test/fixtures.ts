@@ -65,5 +65,50 @@ export const brokenSnapshot: McpSnapshot = {
       },
       outputSchema: { type: "object" },
     },
+    {
+      // inputSchema is a malformed JSON Schema (required must be an array)
+      name: "bad_input_schema",
+      title: "Bad Input Schema",
+      description: "Has an invalid inputSchema.",
+      inputSchema: {
+        type: "object",
+        required: "not-an-array" as unknown as string[],
+      },
+      outputSchema: { type: "object" },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    {
+      // inputSchema is valid JSON Schema but not of type object
+      name: "array_input_schema",
+      title: "Array Input Schema",
+      description: "inputSchema is an array, not an object.",
+      inputSchema: { type: "array" },
+      outputSchema: { type: "object" },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    {
+      // outputSchema is a malformed JSON Schema (type must be a known type)
+      name: "bad_output_schema",
+      title: "Bad Output Schema",
+      description: "Has an invalid outputSchema.",
+      inputSchema: { type: "object" },
+      outputSchema: { type: "not-a-real-type" },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
   ],
 };

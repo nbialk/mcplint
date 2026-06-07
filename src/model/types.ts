@@ -12,7 +12,11 @@ export type RuleId =
   | "hint-destructive-missing"
   | "hint-idempotent-missing"
   | "hint-openworld-missing"
-  | "output-schema-missing";
+  | "output-schema-missing"
+  | "input-schema-missing"
+  | "input-schema-invalid"
+  | "input-schema-not-object"
+  | "output-schema-invalid";
 
 export interface Rule {
   id: RuleId;

@@ -1,5 +1,27 @@
+import { Ajv } from "ajv";
 import type { Finding, RuleId, ToolInfo } from "../model/types.js";
 import { MAX_TOOL_NAME_LENGTH, RULES } from "../rules.js";
+
+/**
+ * Validates JSON Schema documents against the JSON Schema meta-schema.
+ * `strict: false` avoids false positives on MCP-specific schema extensions;
+ * we rely on compile()/validateSchema to surface genuine meta-schema errors.
+ */
+const ajv = new Ajv({ allErrors: true, strict: false, validateSchema: true });
+
+/** Compiles a schema, returning a readable error message if it is invalid. */
+function validateSchema(schema: unknown): string | null {
+  try {
+    ajv.compile(schema as object);
+    return null;
+  } catch (err) {
+    const first = ajv.errors?.[0];
+    if (first) {
+      return `${first.instancePath || "schema"} ${first.message ?? "is invalid"}`;
+    }
+    return err instanceof Error ? err.message : "Schema is not a valid JSON Schema.";
+  }
+}
 
 function finding(
   ruleId: RuleId,
@@ -83,6 +105,38 @@ export function checkTool(tool: ToolInfo): Finding[] {
         "Tool has no outputSchema describing its structured response.",
       ),
     );
+  } else {
+    const outputError = validateSchema(tool.outputSchema);
+    if (outputError) {
+      findings.push(
+        finding("output-schema-invalid", name, `Invalid outputSchema: ${outputError}`),
+      );
+    }
+  }
+
+  if (!tool.inputSchema) {
+    findings.push(
+      finding(
+        "input-schema-missing",
+        name,
+        "Tool has no inputSchema describing its parameters.",
+      ),
+    );
+  } else {
+    const inputError = validateSchema(tool.inputSchema);
+    if (inputError) {
+      findings.push(
+        finding("input-schema-invalid", name, `Invalid inputSchema: ${inputError}`),
+      );
+    } else if (tool.inputSchema.type !== "object") {
+      findings.push(
+        finding(
+          "input-schema-not-object",
+          name,
+          `inputSchema type is "${tool.inputSchema.type ?? "undefined"}"; MCP expects "object".`,
+        ),
+      );
+    }
   }
 
   const props = tool.inputSchema?.properties;

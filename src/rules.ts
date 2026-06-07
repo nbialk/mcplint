@@ -62,6 +62,30 @@ export const RULES: Record<RuleId, Rule> = {
     severity: "warning",
     title: "Tool is missing an outputSchema",
   },
+  "input-schema-missing": {
+    id: "input-schema-missing",
+    category: "structure",
+    severity: "error",
+    title: "Tool is missing an inputSchema",
+  },
+  "input-schema-invalid": {
+    id: "input-schema-invalid",
+    category: "structure",
+    severity: "error",
+    title: "Tool inputSchema is not a valid JSON Schema",
+  },
+  "input-schema-not-object": {
+    id: "input-schema-not-object",
+    category: "structure",
+    severity: "warning",
+    title: "Tool inputSchema is not of type object",
+  },
+  "output-schema-invalid": {
+    id: "output-schema-invalid",
+    category: "structure",
+    severity: "error",
+    title: "Tool outputSchema is not a valid JSON Schema",
+  },
 };
 
 /** MCP convention: tool names should stay within this length. */

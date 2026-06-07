@@ -1,11 +1,30 @@
 {
-  "name": "mcp-cli-checker",
+  "name": "mcplint",
   "version": "1.0.0",
   "description": "CLI tool that connects to an MCP server and lints its tool definitions",
   "type": "module",
+  "license": "MIT",
+  "author": "Niklas Bialk",
+  "homepage": "https://github.com/nbialk/mcplint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbialk/mcplint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nbialk/mcplint/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "lint",
+    "linter",
+    "cli",
+    "tools",
+    "validation"
+  ],
   "packageManager": "pnpm@8.15.6",
   "bin": {
-    "mcp-check": "dist/cli.js"
+    "mcplint": "dist/cli.js"
   },
   "files": [
     "dist"
@@ -20,10 +39,12 @@
     "dev": "tsx src/cli.ts",
     "agents:sync": "node scripts/agents/sync-agent-shims.mjs",
     "agents:check": "node scripts/agents/sync-agent-shims.mjs --check",
-    "postinstall": "node scripts/agents/sync-agent-shims.mjs"
+    "prepack": "pnpm build",
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "ajv": "^8.17.1",
     "commander": "^12.1.0",
     "picocolors": "^1.1.1",
     "zod": "^3.25.0"

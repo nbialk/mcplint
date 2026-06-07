@@ -7,7 +7,7 @@ export type ConnectOptions =
   | { kind: "http"; url: string; headers?: Record<string, string> }
   | { kind: "stdio"; command: string; args: string[] };
 
-const CLIENT_INFO = { name: "mcp-cli-checker", version: "1.0.0" };
+const CLIENT_INFO = { name: "mcplint", version: "1.0.0" };
 
 /**
  * Builds a transport, connects a client (which performs the initialize

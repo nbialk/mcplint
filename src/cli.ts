@@ -18,7 +18,7 @@ interface CliOptions {
 const program = new Command();
 
 program
-  .name("mcp-check")
+  .name("mcplint")
   .description("Lint the tool definitions of an MCP server")
   .version("1.0.0")
   .option("--url <url>", "connect to a Streamable HTTP MCP server")
@@ -124,8 +124,8 @@ function failConnect(err: unknown, opts: CliOptions): never {
     } else {
       lines.push(
         pc.dim("  Provide credentials and retry, for example:"),
-        pc.dim("    mcp-check --url <url> --bearer <token>"),
-        pc.dim('    mcp-check --url <url> --header "X-Api-Key: <key>"'),
+        pc.dim("    mcplint --url <url> --bearer <token>"),
+        pc.dim('    mcplint --url <url> --header "X-Api-Key: <key>"'),
       );
     }
     console.error(lines.join("\n"));
