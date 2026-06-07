@@ -1,6 +1,9 @@
 {
-  "name": "mcplint",
+  "name": "@nbialk/mcplint",
   "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "CLI tool that connects to an MCP server and lints its tool definitions",
   "type": "module",
   "license": "MIT",

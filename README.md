@@ -30,13 +30,13 @@ In short: `mcplint` owns Layers 1 and 2 in the open and points you to a hosted a
 Run it without installing via `npx`:
 
 ```bash
-npx mcplint --url <url>
+npx @nbialk/mcplint --url <url>
 ```
 
 Or install it globally:
 
 ```bash
-npm install -g mcplint
+npm install -g @nbialk/mcplint
 mcplint --url <url>
 ```
 
