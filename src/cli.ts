@@ -13,6 +13,10 @@ interface CliOptions {
   json?: boolean;
   header?: string[];
   bearer?: string;
+  directory?: boolean;
+  experimental?: boolean;
+  verbose?: boolean;
+  debug?: boolean;
 }
 
 const program = new Command();
@@ -30,6 +34,22 @@ program
     [],
   )
   .option("--bearer <token>", "shorthand for an Authorization: Bearer header (--url only)")
+  .option(
+    "--directory",
+    "directory-submission mode: treat missing readOnly/destructive hints as errors",
+  )
+  .option(
+    "--experimental",
+    "enable opt-in heuristic checks (name-based read/write inference)",
+  )
+  .option(
+    "--verbose",
+    "show the full per-tool findings breakdown (default is a compact summary)",
+  )
+  .option(
+    "--debug",
+    "pass through the stdio server's stderr output (--stdio only)",
+  )
   .option("--json", "output the report as JSON")
   .action(async (opts: CliOptions) => {
     await run(opts);
@@ -76,7 +96,11 @@ async function run(opts: CliOptions): Promise<void> {
         headers: Object.keys(headers).length > 0 ? headers : undefined,
       });
     } else {
-      client = await connect({ kind: "stdio", ...parseStdioCommand(opts.stdio!) });
+      client = await connect({
+        kind: "stdio",
+        ...parseStdioCommand(opts.stdio!),
+        debug: opts.debug,
+      });
     }
   } catch (err) {
     failConnect(err, opts);
@@ -85,12 +109,15 @@ async function run(opts: CliOptions): Promise<void> {
 
   try {
     const snapshot = await fetchSnapshot(client);
-    const findings = runLinter(snapshot);
+    const findings = runLinter(snapshot, {
+      directory: opts.directory,
+      experimental: opts.experimental,
+    });
 
     if (opts.json) {
       console.log(renderJson(snapshot, findings));
     } else {
-      renderConsole(snapshot, findings);
+      renderConsole(snapshot, findings, { verbose: opts.verbose });
     }
 
     const { errors } = summarize(findings);

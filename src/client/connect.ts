@@ -5,7 +5,7 @@ import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 export type ConnectOptions =
   | { kind: "http"; url: string; headers?: Record<string, string> }
-  | { kind: "stdio"; command: string; args: string[] };
+  | { kind: "stdio"; command: string; args: string[]; debug?: boolean };
 
 const CLIENT_INFO = { name: "mcplint", version: "1.0.0" };
 
@@ -30,6 +30,10 @@ function buildTransport(opts: ConnectOptions): Transport {
   return new StdioClientTransport({
     command: opts.command,
     args: opts.args,
+    // The spawned server prints its own warnings to stderr (npm exec notices,
+    // missing-LLM-key hints). That noise is unrelated to the lint report, so we
+    // suppress it unless --debug is set.
+    stderr: opts.debug ? "inherit" : "ignore",
   });
 }
 

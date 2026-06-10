@@ -1,13 +1,25 @@
 import { Ajv } from "ajv";
-import type { Finding, RuleId, ToolInfo } from "../model/types.js";
+import type { Finding, RuleId, Severity, ToolInfo } from "../model/types.js";
 import { MAX_TOOL_NAME_LENGTH, RULES } from "../rules.js";
+
+export interface CheckOptions {
+  /** Promote directory-gating rules to "error" severity. */
+  directory?: boolean;
+}
 
 /**
  * Validates JSON Schema documents against the JSON Schema meta-schema.
  * `strict: false` avoids false positives on MCP-specific schema extensions;
  * we rely on compile()/validateSchema to surface genuine meta-schema errors.
+ * `logger: false` silences Ajv's informational notes (e.g. `unknown format
+ * "uri"`) so they don't leak into the lint report.
  */
-const ajv = new Ajv({ allErrors: true, strict: false, validateSchema: true });
+const ajv = new Ajv({
+  allErrors: true,
+  strict: false,
+  validateSchema: true,
+  logger: false,
+});
 
 /** Compiles a schema, returning a readable error message if it is invalid. */
 function validateSchema(schema: unknown): string | null {
@@ -23,18 +35,26 @@ function validateSchema(schema: unknown): string | null {
   }
 }
 
-function finding(
-  ruleId: RuleId,
-  toolName: string,
-  message: string,
-  paramName?: string,
-): Finding {
-  return {
-    ruleId,
-    severity: RULES[ruleId].severity,
-    toolName,
-    paramName,
-    message,
+function severityFor(ruleId: RuleId, directory: boolean): Severity {
+  const rule = RULES[ruleId];
+  if (directory && rule.directoryError) return "error";
+  return rule.severity;
+}
+
+function makeFinding(directory: boolean) {
+  return function finding(
+    ruleId: RuleId,
+    toolName: string,
+    message: string,
+    paramName?: string,
+  ): Finding {
+    return {
+      ruleId,
+      severity: severityFor(ruleId, directory),
+      toolName,
+      paramName,
+      message,
+    };
   };
 }
 
@@ -43,7 +63,8 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 /** Runs all deterministic structure/metadata checks for a single tool. */
-export function checkTool(tool: ToolInfo): Finding[] {
+export function checkTool(tool: ToolInfo, opts: CheckOptions = {}): Finding[] {
+  const finding = makeFinding(opts.directory ?? false);
   const findings: Finding[] = [];
   const name = tool.name || "<unnamed>";
 
@@ -77,19 +98,33 @@ export function checkTool(tool: ToolInfo): Finding[] {
     );
   }
 
+  // Hint checks follow the MCP spec's conditional semantics: destructiveHint
+  // and idempotentHint are only meaningful when readOnlyHint === false. We
+  // therefore gate them behind an explicit readOnlyHint: false, which also
+  // avoids nagging read-only tools about write-only hints (and the
+  // accompanying alert fatigue of 4 redundant warnings per bare tool).
   const ann = tool.annotations ?? {};
   if (typeof ann.readOnlyHint !== "boolean") {
     findings.push(finding("hint-readonly-missing", name, "Missing readOnlyHint."));
-  }
-  if (typeof ann.destructiveHint !== "boolean") {
-    findings.push(
-      finding("hint-destructive-missing", name, "Missing destructiveHint."),
-    );
-  }
-  if (typeof ann.idempotentHint !== "boolean") {
-    findings.push(
-      finding("hint-idempotent-missing", name, "Missing idempotentHint."),
-    );
+  } else if (ann.readOnlyHint === false) {
+    if (typeof ann.destructiveHint !== "boolean") {
+      findings.push(
+        finding(
+          "hint-destructive-missing",
+          name,
+          "readOnlyHint is false but destructiveHint is missing; clients need this to gauge risk.",
+        ),
+      );
+    }
+    if (typeof ann.idempotentHint !== "boolean") {
+      findings.push(
+        finding(
+          "hint-idempotent-missing",
+          name,
+          "readOnlyHint is false but idempotentHint is missing.",
+        ),
+      );
+    }
   }
   if (typeof ann.openWorldHint !== "boolean") {
     findings.push(

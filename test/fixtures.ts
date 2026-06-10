@@ -110,5 +110,42 @@ export const brokenSnapshot: McpSnapshot = {
         openWorldHint: false,
       },
     },
+    {
+      // readOnlyHint: false, so destructive/idempotent hints become meaningful
+      // and their absence must be flagged (the gated branch).
+      name: "mutate_thing",
+      title: "Mutate Thing",
+      description: "A write tool that omits destructive/idempotent hints.",
+      inputSchema: { type: "object" },
+      outputSchema: { type: "object" },
+      annotations: {
+        readOnlyHint: false,
+        openWorldHint: false,
+      },
+    },
+  ],
+};
+
+/**
+ * Tools whose names imply read/write intent but carry no annotations.
+ * Exercises the opt-in heuristic layer.
+ */
+export const heuristicSnapshot: McpSnapshot = {
+  server: { name: "heuristic-server", version: "1.0.0" },
+  tools: [
+    {
+      name: "issue_list",
+      title: "List Issues",
+      description: "Lists issues.",
+      inputSchema: { type: "object" },
+      outputSchema: { type: "object" },
+    },
+    {
+      name: "comment_create",
+      title: "Create Comment",
+      description: "Creates a comment.",
+      inputSchema: { type: "object" },
+      outputSchema: { type: "object" },
+    },
   ],
 };

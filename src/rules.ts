@@ -37,12 +37,14 @@ export const RULES: Record<RuleId, Rule> = {
     category: "metadata",
     severity: "warning",
     title: "Tool is missing the readOnlyHint annotation",
+    directoryError: true,
   },
   "hint-destructive-missing": {
     id: "hint-destructive-missing",
     category: "metadata",
     severity: "warning",
     title: "Tool is missing the destructiveHint annotation",
+    directoryError: true,
   },
   "hint-idempotent-missing": {
     id: "hint-idempotent-missing",
@@ -85,6 +87,18 @@ export const RULES: Record<RuleId, Rule> = {
     category: "structure",
     severity: "error",
     title: "Tool outputSchema is not a valid JSON Schema",
+  },
+  "tool-likely-readonly-unannotated": {
+    id: "tool-likely-readonly-unannotated",
+    category: "heuristic",
+    severity: "info",
+    title: "Tool name suggests it is read-only but has no readOnlyHint",
+  },
+  "tool-likely-mutating-unannotated": {
+    id: "tool-likely-mutating-unannotated",
+    category: "heuristic",
+    severity: "info",
+    title: "Tool name suggests it mutates state but has no annotations",
   },
 };
 

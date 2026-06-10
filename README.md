@@ -75,6 +75,8 @@ mcplint --stdio "node server.js"
 | `--stdio <command>` | Spawn a stdio MCP server, e.g. `"node server.js"`.                 |
 | `--header <header>` | Extra HTTP header for `--url`, e.g. `"X-Api-Key: abc"`. Repeatable.|
 | `--bearer <token>`  | Shorthand for an `Authorization: Bearer <token>` header (`--url`). |
+| `--verbose`         | Show the full per-tool findings breakdown (default is compact).    |
+| `--debug`           | Pass through the stdio server's own stderr output (`--stdio`).     |
 | `--json`            | Output the report as JSON instead of the console view.             |
 | `--version`         | Print the version.                                                 |
 | `--help`            | Print usage.                                                       |
@@ -116,8 +118,14 @@ Each tool reported by the server is validated against these rules:
 ## Output
 
 The console report lists every tool with a status symbol (`✓` clean, `!`
-warnings only, `✗` errors), the findings for that tool, and the checks it
-passed. A summary line shows totals and how many tools are clean.
+warnings only, `✗` errors). By default each tool is shown on a single line with
+its severity counts, followed by an **Issues by rule** block that aggregates
+findings by rule so systemic problems read as one pattern rather than dozens of
+identical lines. A final summary shows totals and how many tools are clean.
+
+Pass `--verbose` to expand every tool into its individual findings. When using
+`--stdio`, the spawned server's own stderr (npm notices, missing-key hints,
+schema warnings) is hidden by default; pass `--debug` to see it.
 
 Use `--json` for a stable, machine-readable report suited to CI:
 

@@ -1,6 +1,6 @@
-export type Severity = "error" | "warning";
+export type Severity = "error" | "warning" | "info";
 
-export type RuleCategory = "structure" | "metadata";
+export type RuleCategory = "structure" | "metadata" | "heuristic";
 
 export type RuleId =
   | "tool-description-missing"
@@ -16,13 +16,20 @@ export type RuleId =
   | "input-schema-missing"
   | "input-schema-invalid"
   | "input-schema-not-object"
-  | "output-schema-invalid";
+  | "output-schema-invalid"
+  | "tool-likely-readonly-unannotated"
+  | "tool-likely-mutating-unannotated";
 
 export interface Rule {
   id: RuleId;
   category: RuleCategory;
   severity: Severity;
   title: string;
+  /**
+   * When true, this rule is promoted to "error" severity in directory mode
+   * (--directory), where annotation completeness gates submission.
+   */
+  directoryError?: boolean;
 }
 
 export interface Finding {
