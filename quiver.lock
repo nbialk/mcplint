@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "catalog": {
+    "source": "local:template/.agents",
+    "ref": null,
+    "resolved": null,
+    "fetchedAt": "2026-06-10T23:16:45.287Z"
+  },
+  "providers": [
+    "opencode"
+  ],
+  "entries": {
+    "command:cp": {
+      "type": "command",
+      "sourcePath": "commands/cp.md",
+      "digest": "sha256:b6fb7ab42372984a6cc3d814dae680f7ac1de4fb0bf769048d6e97a879ba0954"
+    },
+    "mcp:context7": {
+      "type": "mcp",
+      "transport": "http",
+      "configDigest": "sha256:c41554e5c6c2c8667833cfa08ed952fedc7130897008794f633045420bef23a3",
+      "tools": {
+        "resolve-library-id": {
+          "description": "Resolves a package/product name to a Context7-compatible library ID and returns matching libraries.\n\nYou MUST call this function before 'Query Documentation' tool to obtain a valid Context7-compatible library ID UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version' in their query.\n\nEach result includes:\n- Library ID: Context7-compatible identifier (format: /org/project)\n- Name: Library or package name\n- Description: Short summary\n- Code Snippets: Number of available code examples\n- Source Reputation: Authority indicator (High, Medium, Low, or Unknown)\n- Benchmark Score: Quality indicator (100 is the highest score)\n- Versions: List of versions if available. Use one of those versions if the user provides a version in their query. The format of the version is /org/project/version.\n\nFor best results, select libraries based on name match, source reputation, snippet coverage, benchmark score, and relevance to your use case.\n\nSelection Process:\n1. Analyze the query to understand what library/package the user is looking for\n2. Return the most relevant match based on:\n- Name similarity to the query (exact matches prioritized)\n- Description relevance to the query's intent\n- Documentation coverage (prioritize libraries with higher Code Snippet counts)\n- Source reputation (consider libraries with High or Medium reputation more authoritative)\n- Benchmark Score: Quality indicator (100 is the highest score)\n\nResponse Format:\n- Return the selected library ID in a clearly marked section\n- Provide a brief explanation for why this library was chosen\n- If multiple good matches exist, acknowledge this but proceed with the most relevant one\n- If no good matches exist, clearly state this and suggest query refinements\n\nFor ambiguous queries, request clarification before proceeding with a best-guess match.\n\nIMPORTANT: Do not call this tool more than 3 times per question. If you cannot find what you need after 3 calls, use the best result you have.",
+          "inputSchemaHash": "sha256:8e6eeef9cb886e6b08d64cba10de9b8de224406daf6a286c90ef1bd82f0ea732"
+        },
+        "query-docs": {
+          "description": "Retrieves and queries up-to-date documentation and code examples from Context7 for any programming library or framework.\n\nYou must call 'Resolve Context7 Library ID' tool first to obtain the exact Context7-compatible library ID required to use this tool, UNLESS the user explicitly provides a library ID in the format '/org/project' or '/org/project/version' in their query.\n\nDo not call this tool more than 3 times per question.",
+          "inputSchemaHash": "sha256:d2c3c869b7ecd4fecaeccdb39dae20cef8c29f9adca5bfa1b0863811503b3d45"
+        }
+      },
+      "toolsFetchedAt": "2026-06-10T23:19:08.294Z"
+    },
+    "mcp:langfuse-docs": {
+      "type": "mcp",
+      "transport": "http",
+      "configDigest": "sha256:1b82d97853f555a6d3581232a888a3b14b7b5fe8dc7efa8cef8b54b131560657",
+      "tools": {
+        "searchLangfuseDocs": {
+          "description": "Semantic search (RAG) over the Langfuse documentation. Use this whenever the user asks a broader question that cannot be answered by a specific single page. Returns a concise answer synthesized from relevant docs. The raw provider response is included in _meta. Prefer this before guessing. If a specific page is needed call getLangfuseDocsPage first.",
+          "inputSchemaHash": "sha256:2f3e78806336e850bce4c3798f6b5249ead94c821997fb524dbc0e254b418a0e"
+        },
+        "getLangfuseDocsPage": {
+          "description": "Fetch the raw Markdown for a single Langfuse docs page. Accepts a docs path (e.g., /docs/observability/overview) or a full https://langfuse.com URL. Returns the exact Markdown (may include front matter). Use when you need a specific page content (Integration, Features, API, etc.) or code samples. Prefer searchLangfuseDocs for broader questions where there is not one specific page about it.",
+          "inputSchemaHash": "sha256:983532aad0e4685e741aa5df6099d0dc03730e44546a519b4520b471014d52f4"
+        },
+        "getLangfuseOverview": {
+          "description": "Get a high-level, machine-readable index by downloading https://langfuse.com/llms.txt. Use this at the start of a session when needed to discover key docs endpoints or to seed follow-up calls to searchLangfuseDocs or getLangfuseDocsPage. Returns the plain text contents of llms.txt. Avoid repeated calls within the same session.",
+          "inputSchemaHash": "sha256:f973399805c1c233633f5196cf8e2ad40ee100b94996d711dcd030813b671bc5"
+        }
+      },
+      "toolsFetchedAt": "2026-06-10T23:19:08.720Z"
+    },
+    "mcp:posthog": {
+      "type": "mcp",
+      "transport": "http",
+      "configDigest": "sha256:7abc40d348a7ffc8d21d3b6b5001181cee063dd13657bab9fda4681fa149f2ca",
+      "tools": null,
+      "toolsFetchedAt": null
+    },
+    "skill:find-skills": {
+      "type": "skill",
+      "sourcePath": "skills/find-skills",
+      "digest": "sha256:531a4e4686e60f561569b0fa048956cda7864ffa8d9e5e6e0d5e0d69adc395c3",
+      "pin": null,
+      "frontmatter": {
+        "name": "find-skills",
+        "description": "Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.",
+        "version": null
+      }
+    },
+    "skill:skill-creator": {
+      "type": "skill",
+      "sourcePath": "skills/skill-creator",
+      "digest": "sha256:2b3cc78ac6e8fdca4f8098380407c6ca33f89b9f65ff8edf7072ccae62b9130c",
+      "pin": null,
+      "frontmatter": {
+        "name": "skill-creator",
+        "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
+        "version": null
+      }
+    }
+  }
+}
