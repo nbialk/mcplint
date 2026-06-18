@@ -12,12 +12,12 @@ Repo verification gates (all plans): `pnpm typecheck` && `pnpm test` &&
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001 | Remove credential-bearing scratch file (`mcp.tests.txt`) | P1 | S | — | TODO |
-| 002 | Test coverage for the CLI surface (helpers, snapshot, JSON, e2e) | P1 | M | — | TODO |
-| 003 | Fix Ajv `$id`-collision false positives | P1 | S | — (nicer after 002) | TODO |
-| 004 | Follow `tools/list` pagination cursors | P1 | S | 002 (stub pattern) | TODO |
-| 005 | Housekeeping: README sync, single-source version, drop zod + stale scripts | P2 | S | — | TODO |
-| 006 | Upgrade vitest to v4 (clears critical audit advisory) | P3 | S–M | 002, 003, 004 | TODO |
+| 001 | Remove credential-bearing scratch file (`mcp.tests.txt`) | P1 | S | — | DONE (on main; token rotation pending maintainer) |
+| 002 | Test coverage for the CLI surface (helpers, snapshot, JSON, e2e) | P1 | M | — | DONE (branch advisor/002-cli-surface-tests, awaiting merge) |
+| 003 | Fix Ajv `$id`-collision false positives | P1 | S | — (nicer after 002) | DONE (branch advisor/003-ajv-id-collision, awaiting merge) |
+| 004 | Follow `tools/list` pagination cursors | P1 | S | 002 (stub pattern) | DONE (branch advisor/004-paginate-tools-list, stacked on 002) |
+| 005 | Housekeeping: README sync, single-source version, drop zod + stale scripts | P2 | S | — | DONE (branch advisor/005-housekeeping) |
+| 006 | Upgrade vitest to v4 (clears critical audit advisory) | P3 | S–M | 002, 003, 004 | DONE (branch advisor/006-upgrade-vitest, has 002+003+004 merged in) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) |
 REJECTED (with one-line rationale).
@@ -61,6 +61,14 @@ design/spike plan:
 - **D3 — Rule configuration** (`--rule id=off` / `.mcplintrc`): CI adopters
   need to silence noisy rules (e.g. `output-schema-missing`).
 - **D4 — SARIF output**: gets findings into GitHub code scanning for free.
+
+## Deferred follow-ups (discovered during execution)
+
+- After plan 006, `pnpm audit` still reports two **esbuild** advisories (1 high,
+  1 low), both dev-only and transitive via vitest/tsx. The "high" is a Deno-
+  module RCE vector that does not apply to this npm/pnpm dev setup; the low is
+  a Windows dev-server file read. Not worth a plan today — re-check when tsx /
+  vitest next release a patched esbuild.
 
 ## Audit coverage note
 
