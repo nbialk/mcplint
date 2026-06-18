@@ -1,6 +1,6 @@
 export type Severity = "error" | "warning" | "info";
 
-export type RuleCategory = "structure" | "metadata" | "heuristic";
+export type RuleCategory = "structure" | "metadata" | "heuristic" | "apps";
 
 export type RuleId =
   | "tool-description-missing"
@@ -18,7 +18,10 @@ export type RuleId =
   | "input-schema-not-object"
   | "output-schema-invalid"
   | "tool-likely-readonly-unannotated"
-  | "tool-likely-mutating-unannotated";
+  | "tool-likely-mutating-unannotated"
+  | "csp-missing"
+  | "csp-domains-empty"
+  | "csp-frame-domains-declared";
 
 export interface Rule {
   id: RuleId;
@@ -35,8 +38,15 @@ export interface Rule {
 export interface Finding {
   ruleId: RuleId;
   severity: Severity;
+  /**
+   * The subject of the finding. For tool rules this is the tool name; for
+   * resource (apps) rules it is the resource name or URI so the existing
+   * grouped reporters can render it without changes.
+   */
   toolName: string;
   paramName?: string;
+  /** Set for resource-scoped (apps) findings; the offending resource URI. */
+  resourceUri?: string;
   message: string;
 }
 
@@ -77,8 +87,34 @@ export interface ServerInfo {
   version?: string;
 }
 
+/**
+ * Content-Security-Policy declared on an MCP Apps UI resource, normalized from
+ * either `_meta.ui.csp` (camelCase) or the `openai/widgetCSP` alias
+ * (snake_case). Domain lists map to the widget sandbox's connect-src/img-src/
+ * frame-src.
+ */
+export interface ResourceCsp {
+  connectDomains?: string[];
+  resourceDomains?: string[];
+  frameDomains?: string[];
+}
+
+/** Minimal shape of a resource we care about, normalized from resources/list. */
+export interface ResourceInfo {
+  uri: string;
+  name?: string;
+  mimeType?: string;
+  /** Normalized CSP, present only when a CSP object was declared. */
+  csp?: ResourceCsp;
+  /** Whether any CSP object (either variant) was declared on the resource. */
+  cspDeclared: boolean;
+  /** True for MCP Apps UI resources (ui:// scheme or the mcp-app MIME type). */
+  isUi: boolean;
+}
+
 /** Pure data snapshot of the server, decoupled from any live connection. */
 export interface McpSnapshot {
   server: ServerInfo;
   tools: ToolInfo[];
+  resources: ResourceInfo[];
 }

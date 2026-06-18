@@ -1,6 +1,7 @@
 import { Ajv } from "ajv";
-import type { Finding, RuleId, Severity, ToolInfo } from "../model/types.js";
-import { MAX_TOOL_NAME_LENGTH, RULES } from "../rules.js";
+import type { Finding, ToolInfo } from "../model/types.js";
+import { MAX_TOOL_NAME_LENGTH } from "../rules.js";
+import { makeFinding } from "./finding.js";
 
 export interface CheckOptions {
   /** Promote directory-gating rules to "error" severity. */
@@ -33,29 +34,6 @@ function validateSchema(schema: unknown): string | null {
     }
     return err instanceof Error ? err.message : "Schema is not a valid JSON Schema.";
   }
-}
-
-function severityFor(ruleId: RuleId, directory: boolean): Severity {
-  const rule = RULES[ruleId];
-  if (directory && rule.directoryError) return "error";
-  return rule.severity;
-}
-
-function makeFinding(directory: boolean) {
-  return function finding(
-    ruleId: RuleId,
-    toolName: string,
-    message: string,
-    paramName?: string,
-  ): Finding {
-    return {
-      ruleId,
-      severity: severityFor(ruleId, directory),
-      toolName,
-      paramName,
-      message,
-    };
-  };
 }
 
 function isNonEmptyString(value: unknown): value is string {
@@ -183,7 +161,7 @@ export function checkTool(tool: ToolInfo, opts: CheckOptions = {}): Finding[] {
             "param-description-missing",
             name,
             `Parameter "${paramName}" has no description.`,
-            paramName,
+            { paramName },
           ),
         );
       }

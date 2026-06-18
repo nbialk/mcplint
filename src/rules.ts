@@ -100,6 +100,25 @@ export const RULES: Record<RuleId, Rule> = {
     severity: "info",
     title: "Tool name suggests it mutates state but has no annotations",
   },
+  "csp-missing": {
+    id: "csp-missing",
+    category: "apps",
+    severity: "warning",
+    title: "UI resource is missing a Content-Security-Policy",
+    directoryError: true,
+  },
+  "csp-domains-empty": {
+    id: "csp-domains-empty",
+    category: "apps",
+    severity: "warning",
+    title: "UI resource CSP allowlists no connect or resource domains",
+  },
+  "csp-frame-domains-declared": {
+    id: "csp-frame-domains-declared",
+    category: "apps",
+    severity: "info",
+    title: "UI resource declares frameDomains (discouraged)",
+  },
 };
 
 /** MCP convention: tool names should stay within this length. */

@@ -25,6 +25,7 @@ export const cleanSnapshot: McpSnapshot = {
       },
     },
   ],
+  resources: [],
 };
 
 /** A broken server exercising every rule. */
@@ -124,6 +125,7 @@ export const brokenSnapshot: McpSnapshot = {
       },
     },
   ],
+  resources: [],
 };
 
 /**
@@ -146,6 +148,85 @@ export const heuristicSnapshot: McpSnapshot = {
       description: "Creates a comment.",
       inputSchema: { type: "object" },
       outputSchema: { type: "object" },
+    },
+  ],
+  resources: [],
+};
+
+/** An MCP Apps server whose single UI resource declares a valid CSP. */
+export const appsCleanSnapshot: McpSnapshot = {
+  server: { name: "apps-clean", version: "1.0.0" },
+  tools: [],
+  resources: [
+    {
+      uri: "ui://views/widget.html",
+      name: "widget",
+      cspDeclared: true,
+      isUi: true,
+      csp: {
+        connectDomains: ["https://api.example.com"],
+        resourceDomains: ["https://cdn.example.com"],
+      },
+    },
+  ],
+};
+
+/** An MCP Apps server exercising every CSP rule plus a non-UI resource. */
+export const appsBrokenSnapshot: McpSnapshot = {
+  server: { name: "apps-broken", version: "0.0.1" },
+  tools: [],
+  resources: [
+    {
+      // no CSP declared at all
+      uri: "ui://views/no-csp.html",
+      name: "no_csp",
+      cspDeclared: false,
+      isUi: true,
+    },
+    {
+      // CSP object present but allowlists nothing
+      uri: "ui://views/empty-csp.html",
+      name: "empty_csp",
+      cspDeclared: true,
+      isUi: true,
+      csp: {},
+    },
+    {
+      // declares frameDomains (discouraged)
+      uri: "ui://views/frames.html",
+      name: "frames",
+      cspDeclared: true,
+      isUi: true,
+      csp: {
+        connectDomains: ["https://api.example.com"],
+        frameDomains: ["https://embed.example.com"],
+      },
+    },
+    {
+      // a normal data resource: must never be CSP-checked
+      uri: "file:///data.json",
+      name: "data",
+      mimeType: "application/json",
+      cspDeclared: false,
+      isUi: false,
+    },
+  ],
+};
+
+/** A UI resource declaring CSP only via the openai/widgetCSP alias. */
+export const appsAliasSnapshot: McpSnapshot = {
+  server: { name: "apps-alias", version: "1.0.0" },
+  tools: [],
+  resources: [
+    {
+      uri: "ui://views/alias.html",
+      name: "alias",
+      cspDeclared: true,
+      isUi: true,
+      csp: {
+        connectDomains: ["https://api.example.com"],
+        resourceDomains: ["https://cdn.example.com"],
+      },
     },
   ],
 };

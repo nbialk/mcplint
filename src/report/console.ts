@@ -1,5 +1,10 @@
 import pc from "picocolors";
-import type { Finding, McpSnapshot, ToolInfo } from "../model/types.js";
+import type {
+  Finding,
+  McpSnapshot,
+  ResourceInfo,
+  ToolInfo,
+} from "../model/types.js";
 
 export interface ReportSummary {
   errors: number;
@@ -80,6 +85,8 @@ export function renderConsole(
     renderTool(key, group, options.verbose ?? false);
   }
 
+  renderResources(snapshot, byTool, options.verbose ?? false);
+
   renderRuleSummary(findings);
 
   const { errors, warnings, info } = summarize(findings);
@@ -107,6 +114,31 @@ export function renderConsole(
       } fully annotated\n`,
     ),
   );
+}
+
+/**
+ * Renders the MCP Apps UI resources (those carrying CSP findings) under their
+ * own heading, so resource-scoped findings are visible in compact mode rather
+ * than only surfacing in the rule rollup.
+ */
+function renderResources(
+  snapshot: McpSnapshot,
+  byTool: Map<string, Finding[]>,
+  verbose: boolean,
+): void {
+  const uiResources = snapshot.resources.filter((r) => r.isUi);
+  if (uiResources.length === 0) return;
+
+  console.log(pc.bold(`\nUI resources (${uiResources.length})`));
+  for (const resource of uiResources) {
+    const key = resourceKey(resource);
+    const group = byTool.get(key) ?? [];
+    renderTool(key, group, verbose);
+  }
+}
+
+function resourceKey(resource: ResourceInfo): string {
+  return resource.name || resource.uri;
 }
 
 /**

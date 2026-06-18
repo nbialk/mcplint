@@ -11,9 +11,9 @@ authors can keep their tool definitions clean and convention-compliant.
 
 **Layer 1 — Static checks (in scope, available today).** Issues found purely from the manifest and tool/resource definitions: missing tool or parameter descriptions, invalid or incomplete schemas, naming conventions, missing hints, missing `outputSchema`. Fast, deterministic, no runtime required. This is the current core of the tool (see [What it checks](#what-it-checks)).
 
-**Layer 2 — Local behavioral & security checks (in scope, planned).** Verify actual behavior without any external account or platform:
+**Layer 2 — Local behavioral & security checks (in scope, partially available).** Verify actual behavior without any external account or platform:
 
-- CSP headers on the served view HTML
+- Widget Content-Security-Policy on UI resources (available today)
 - `ext-apps` protocol conformance
 - Whether the iframe view actually loads
 - Whether `structuredContent` matches its declared schema
@@ -115,6 +115,24 @@ Each tool reported by the server is validated against these rules:
 | `input-schema-not-object`   | warning  | `inputSchema` is not of type `object`.       |
 | `output-schema-invalid`     | error    | `outputSchema` is not a valid JSON Schema.   |
 
+### MCP Apps (UI resources)
+
+Servers that expose UI resources (the [Apps SDK](https://developers.openai.com/apps-sdk) /
+`ext-apps` widgets, identified by a `ui://` URI or the `text/html;profile=mcp-app`
+MIME type) are additionally checked for a declared Content-Security-Policy. CSP is
+read statically from the resource's `_meta` (`_meta.ui.csp` or the
+`openai/widgetCSP` alias) — no HTML is fetched and nothing is rendered. Tool-only
+servers are unaffected.
+
+| Rule ID                      | Severity | Description                                                        |
+| ---------------------------- | -------- | ------------------------------------------------------------------ |
+| `csp-missing`                | warning  | UI resource declares no CSP. The host sandbox blocks all access.  |
+| `csp-domains-empty`          | warning  | CSP is declared but allowlists no `connectDomains`/`resourceDomains`. |
+| `csp-frame-domains-declared` | info     | CSP declares `frameDomains` (discouraged; higher review scrutiny). |
+
+`csp-missing` is promoted to an error under `--directory`, since the Apps SDK
+requires a CSP before broad distribution.
+
 ## Output
 
 The console report lists every tool with a status symbol (`✓` clean, `!`
@@ -133,6 +151,7 @@ Use `--json` for a stable, machine-readable report suited to CI:
 {
   "server": { "name": "example", "version": "0.0.1" },
   "toolCount": 3,
+  "resourceCount": 0,
   "summary": { "errors": 0, "warnings": 6 },
   "findings": [ ... ]
 }

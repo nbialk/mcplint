@@ -1,4 +1,5 @@
 import type { Finding, McpSnapshot } from "../model/types.js";
+import { checkResourceCsp } from "./apps.js";
 import { checkTool } from "./deterministic.js";
 import { checkToolHeuristic } from "./heuristic.js";
 
@@ -20,6 +21,9 @@ export function runLinter(
     if (opts.experimental) {
       findings.push(...checkToolHeuristic(tool));
     }
+  }
+  for (const resource of snapshot.resources ?? []) {
+    findings.push(...checkResourceCsp(resource, { directory: opts.directory }));
   }
   return findings;
 }

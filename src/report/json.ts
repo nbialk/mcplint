@@ -9,6 +9,7 @@ export function renderJson(snapshot: McpSnapshot, findings: Finding[]): string {
     {
       server: snapshot.server,
       toolCount: snapshot.tools.length,
+      resourceCount: snapshot.resources.length,
       summary: { errors, warnings, info, annotated },
       findings,
     },
