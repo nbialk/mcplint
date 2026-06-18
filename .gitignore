@@ -12,3 +12,10 @@ AGENTS.md
 CLAUDE.md
 # Local secrets for MCP env-var interpolation
 .env.local
+
+# Local scratch / notes (may contain credentials)
+*.local.txt
+mcp.tests.txt
+
+
+plans/
