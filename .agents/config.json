@@ -10,10 +10,6 @@
     "langfuse-docs": {
       "transport": "http",
       "url": "https://langfuse.com/api/mcp"
-    },
-    "posthog": {
-      "transport": "http",
-      "url": "https://mcp.posthog.com/mcp"
     }
   },
   "claude": {

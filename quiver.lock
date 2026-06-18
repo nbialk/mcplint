@@ -51,13 +51,6 @@
       },
       "toolsFetchedAt": "2026-06-10T23:19:08.720Z"
     },
-    "mcp:posthog": {
-      "type": "mcp",
-      "transport": "http",
-      "configDigest": "sha256:7abc40d348a7ffc8d21d3b6b5001181cee063dd13657bab9fda4681fa149f2ca",
-      "tools": null,
-      "toolsFetchedAt": null
-    },
     "skill:find-skills": {
       "type": "skill",
       "sourcePath": "skills/find-skills",
