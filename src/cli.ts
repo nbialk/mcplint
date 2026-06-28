@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import pc from "picocolors";
 import { connect, parseStdioCommand } from "./client/connect.js";
@@ -6,6 +8,7 @@ import { fetchSnapshot } from "./client/fetch.js";
 import { runLinter } from "./linter/index.js";
 import { renderConsole, summarize } from "./report/console.js";
 import { renderJson } from "./report/json.js";
+import { getLatestVersion, isOutdated, shouldCheck } from "./version.js";
 
 interface CliOptions {
   url?: string;
@@ -19,12 +22,16 @@ interface CliOptions {
   debug?: boolean;
 }
 
+const pkg = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"),
+) as { name: string; version: string };
+
 const program = new Command();
 
 program
   .name("mcplint")
   .description("Lint the tool definitions of an MCP server")
-  .version("1.0.0")
+  .option("-V, --version", "print the version (and note a newer release if available)")
   .option("--url <url>", "connect to a Streamable HTTP MCP server")
   .option("--stdio <command>", "spawn a stdio MCP server, e.g. \"node server.js\"")
   .option(
@@ -172,6 +179,25 @@ function fail(message: string): never {
   process.exit(2);
 }
 
-program.parseAsync().catch((err) => {
-  fail(errorMessage(err));
-});
+/** Print the local version and, when possible, note a newer npm release. */
+async function printVersion(): Promise<void> {
+  console.log(pkg.version);
+  if (!shouldCheck()) return;
+  const latest = await getLatestVersion(pkg.name);
+  if (latest && isOutdated(pkg.version, latest)) {
+    console.log(pc.yellow(`Update available: ${pkg.version} → ${latest}`));
+    console.log(pc.dim(`Run: npm install -g ${pkg.name}`));
+  }
+}
+
+const wantsVersion = process.argv.slice(2).some((a) => a === "--version" || a === "-V");
+
+if (wantsVersion) {
+  printVersion()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(0));
+} else {
+  program.parseAsync().catch((err) => {
+    fail(errorMessage(err));
+  });
+}
