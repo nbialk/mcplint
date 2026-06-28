@@ -17,5 +17,9 @@ CLAUDE.md
 *.local.txt
 mcp.tests.txt
 
+# Local-only live integration suite (connects to real MCP servers)
+test/integration/
+.env.local.example
 
 plans/
+test-mcp.txt

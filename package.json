@@ -39,6 +39,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:live": "MCPLINT_LIVE=1 vitest run test/integration",
     "dev": "tsx src/cli.ts",
     "agents:sync": "node scripts/agents/sync-agent-shims.mjs",
     "agents:check": "node scripts/agents/sync-agent-shims.mjs --check",
