@@ -75,11 +75,16 @@ mcplint --stdio "node server.js"
 | `--stdio <command>` | Spawn a stdio MCP server, e.g. `"node server.js"`.                 |
 | `--header <header>` | Extra HTTP header for `--url`, e.g. `"X-Api-Key: abc"`. Repeatable.|
 | `--bearer <token>`  | Shorthand for an `Authorization: Bearer <token>` header (`--url`). |
+| `--directory`       | Directory-submission mode: treat missing `readOnly`/`destructive` hints and `csp-missing` as errors. |
+| `--experimental`    | Enable opt-in heuristic checks (name-based read/write inference).  |
 | `--verbose`         | Show the full per-tool findings breakdown (default is compact).    |
 | `--debug`           | Pass through the stdio server's own stderr output (`--stdio`).     |
 | `--json`            | Output the report as JSON instead of the console view.             |
-| `--version`         | Print the version.                                                 |
+| `--version`         | Print the version, noting a newer release if one is available.     |
 | `--help`            | Print usage.                                                       |
+
+The update check on `--version` queries the npm registry. It is skipped in CI
+(`CI` set) or when `NO_UPDATE_NOTIFIER` is set, and fails silently when offline.
 
 ### Authentication
 
@@ -115,6 +120,17 @@ Each tool reported by the server is validated against these rules:
 | `input-schema-not-object`   | warning  | `inputSchema` is not of type `object`.       |
 | `output-schema-invalid`     | error    | `outputSchema` is not a valid JSON Schema.   |
 
+### Experimental heuristics
+
+Pass `--experimental` to enable opt-in, name-based heuristics that infer whether
+a tool likely reads or mutates state. These are `info`-only and never affect the
+exit code.
+
+| Rule ID                             | Severity | Description                                                  |
+| ----------------------------------- | -------- | ------------------------------------------------------------ |
+| `tool-likely-readonly-unannotated`  | info     | Tool name suggests it is read-only but has no `readOnlyHint`.|
+| `tool-likely-mutating-unannotated`  | info     | Tool name suggests it mutates state but has no annotations.  |
+
 ### MCP Apps (UI resources)
 
 Servers that expose UI resources (the [Apps SDK](https://developers.openai.com/apps-sdk) /
@@ -130,8 +146,9 @@ servers are unaffected.
 | `csp-domains-empty`          | warning  | CSP is declared but allowlists no `connectDomains`/`resourceDomains`. |
 | `csp-frame-domains-declared` | info     | CSP declares `frameDomains` (discouraged; higher review scrutiny). |
 
-`csp-missing` is promoted to an error under `--directory`, since the Apps SDK
-requires a CSP before broad distribution.
+Under `--directory` (directory-submission mode), `csp-missing`,
+`hint-readonly-missing`, and `hint-destructive-missing` are promoted to errors,
+since broad distribution requires a CSP and explicit safety hints.
 
 ## Output
 
@@ -152,7 +169,12 @@ Use `--json` for a stable, machine-readable report suited to CI:
   "server": { "name": "example", "version": "0.0.1" },
   "toolCount": 3,
   "resourceCount": 0,
-  "summary": { "errors": 0, "warnings": 6 },
+  "summary": {
+    "errors": 0,
+    "warnings": 6,
+    "info": 0,
+    "annotated": { "full": 1, "total": 3 }
+  },
   "findings": [ ... ]
 }
 ```
