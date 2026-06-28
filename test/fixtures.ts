@@ -12,6 +12,23 @@ export const cleanSnapshot: McpSnapshot = {
         type: "object",
         properties: {
           query: { type: "string", description: "The search query." },
+          filter: {
+            type: "object",
+            description: "Optional result filter.",
+            properties: {
+              limit: { type: "number", description: "Max results to return." },
+            },
+          },
+          tags: {
+            type: "array",
+            description: "Tag filters to apply.",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "Tag name." },
+              },
+            },
+          },
         },
         required: ["query"],
       },
@@ -121,6 +138,44 @@ export const brokenSnapshot: McpSnapshot = {
       outputSchema: { type: "object" },
       annotations: {
         readOnlyHint: false,
+        openWorldHint: false,
+      },
+    },
+    {
+      // nested object property and array-of-objects whose inner fields lack
+      // descriptions: exercises the recursive param-description walk.
+      name: "nested_params",
+      title: "Nested Params",
+      description: "Has undescribed nested object and array-item fields.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          filter: {
+            type: "object",
+            description: "A filter.",
+            properties: {
+              // missing description -> filter.field
+              field: { type: "string" },
+            },
+          },
+          dashcards: {
+            type: "array",
+            description: "Cards to place.",
+            items: {
+              type: "object",
+              properties: {
+                // missing description -> dashcards[].card_id
+                card_id: { type: "number" },
+              },
+            },
+          },
+        },
+      },
+      outputSchema: { type: "object" },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
         openWorldHint: false,
       },
     },

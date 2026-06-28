@@ -79,6 +79,8 @@ export interface JsonSchemaObject {
 export interface JsonSchemaProperty {
   type?: string;
   description?: string;
+  properties?: Record<string, JsonSchemaProperty>;
+  items?: JsonSchemaProperty | JsonSchemaProperty[];
   [key: string]: unknown;
 }
 

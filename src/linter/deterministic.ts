@@ -1,5 +1,5 @@
 import { Ajv } from "ajv";
-import type { Finding, ToolInfo } from "../model/types.js";
+import type { Finding, JsonSchemaProperty, ToolInfo } from "../model/types.js";
 import { MAX_TOOL_NAME_LENGTH } from "../rules.js";
 import { makeFinding } from "./finding.js";
 
@@ -38,6 +38,41 @@ function validateSchema(schema: unknown): string | null {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+/** Guards against pathological/recursive schemas while descending. */
+const MAX_SCHEMA_DEPTH = 10;
+
+/**
+ * Walks a schema's `properties` recursively, descending into nested objects
+ * and array items, and reports every property that lacks a description. Paths
+ * use dotted notation for nested objects and `[]` for array items (e.g.
+ * `filter.range.start`, `dashcards[].card_id`). Composition keywords
+ * (oneOf/anyOf/allOf) and $ref are intentionally not traversed.
+ */
+function collectMissingDescriptions(
+  props: Record<string, JsonSchemaProperty>,
+  prefix: string,
+  depth: number,
+  visit: (path: string) => void,
+): void {
+  if (depth > MAX_SCHEMA_DEPTH) return;
+  for (const [key, schema] of Object.entries(props)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (!isNonEmptyString(schema?.description)) {
+      visit(path);
+    }
+    if (schema?.properties) {
+      collectMissingDescriptions(schema.properties, path, depth + 1, visit);
+    }
+    const items = schema?.items;
+    const itemSchemas = Array.isArray(items) ? items : items ? [items] : [];
+    for (const item of itemSchemas) {
+      if (item?.properties) {
+        collectMissingDescriptions(item.properties, `${path}[]`, depth + 1, visit);
+      }
+    }
+  }
 }
 
 /** Runs all deterministic structure/metadata checks for a single tool. */
@@ -154,18 +189,16 @@ export function checkTool(tool: ToolInfo, opts: CheckOptions = {}): Finding[] {
 
   const props = tool.inputSchema?.properties;
   if (props) {
-    for (const [paramName, schema] of Object.entries(props)) {
-      if (!isNonEmptyString(schema?.description)) {
-        findings.push(
-          finding(
-            "param-description-missing",
-            name,
-            `Parameter "${paramName}" has no description.`,
-            { paramName },
-          ),
-        );
-      }
-    }
+    collectMissingDescriptions(props, "", 0, (paramName) => {
+      findings.push(
+        finding(
+          "param-description-missing",
+          name,
+          `Parameter "${paramName}" has no description.`,
+          { paramName },
+        ),
+      );
+    });
   }
 
   return findings;

@@ -81,6 +81,33 @@ describe("deterministic linter", () => {
     expect(ids).toContain("input-schema-missing");
   });
 
+  it("flags undescribed nested object fields with a dotted path", () => {
+    const params = runLinter(brokenSnapshot)
+      .filter(
+        (f) =>
+          f.toolName === "nested_params" &&
+          f.ruleId === "param-description-missing",
+      )
+      .map((f) => f.paramName);
+    expect(params).toContain("filter.field");
+  });
+
+  it("flags undescribed array-item fields with a [] path", () => {
+    const params = runLinter(brokenSnapshot)
+      .filter(
+        (f) =>
+          f.toolName === "nested_params" &&
+          f.ruleId === "param-description-missing",
+      )
+      .map((f) => f.paramName);
+    expect(params).toContain("dashcards[].card_id");
+  });
+
+  it("does not flag described nested fields", () => {
+    // cleanSnapshot's search_docs has described nested object + array items.
+    expect(runLinter(cleanSnapshot)).toEqual([]);
+  });
+
   it("assigns correct severities", () => {
     const findings = runLinter(brokenSnapshot);
     const desc = findingFor("tool-description-missing", findings);
