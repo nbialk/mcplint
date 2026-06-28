@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/nbialk/mcplint/compare/v1.1.0...v1.2.0) (2026-06-28)
+
+
+### Features
+
+* **cli:** notify about newer release on --version ([ba05c01](https://github.com/nbialk/mcplint/commit/ba05c01cd487f8b5f941d14d0a9ea5bb9d90ade9))
+* **linter:** flag undescribed nested and array-item parameters ([92b524c](https://github.com/nbialk/mcplint/commit/92b524c1b3ada68aa63066e1a7d62dca4fd72dbb))
+
+
+### Documentation
+
+* **readme:** align options and rules with current behavior ([3efe9fb](https://github.com/nbialk/mcplint/commit/3efe9fb7a9aae1d60e9a0ce8a1a12d923e0f5fc8))
+
 ## [1.1.0](https://github.com/nbialk/mcplint/compare/v1.0.0...v1.1.0) (2026-06-18)
 
 
